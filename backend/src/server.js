@@ -9,12 +9,12 @@ app.use(express.json());
 app.get('/api/articles/:name', async (req, res) => {
     const { name } = req.params
 
-    const client = new MongoClient('http://127.0.0.1');
+    const client = new MongoClient('http://127.0.0.1:27107');
     await client.connect();
 
     const db = client.db('react-blog-db');
 
-    const article = db.collection.find('articles').findOne({ name })
+    const article = db.collection('articles').findOne({ name })
 
     if (article) {
         res.json(article)
@@ -24,9 +24,17 @@ app.get('/api/articles/:name', async (req, res) => {
 })
 
 // adding upvotes
-app.put('/api/articles/:name/upvotes', (req, res) => {
+app.put('/api/articles/:name/upvotes', async (req, res) => {
     const { name } = req.params;
-    const article = articlesInfo.find(a => a.name === name);
+
+    const client = new MongoClient('http://127.0.0.1:27017');
+    await client.connect();
+
+    const db = client.db('react-blog-db');
+    await db.collection('articles').updateOne({ name }, {
+        $inc: { upvotes: 1 },
+    })
+    const article = await db.collection('articles').findOne({ name })
 
     if (article) {
         article.upvotes += 1;
