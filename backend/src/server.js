@@ -1,27 +1,29 @@
 import express from 'express'
+import { MongoClient } from 'mongodb'
+
 const app = express();
 const port = 8000
 app.use(express.json());
 
-let articlesInfo = [
-    {
-        name: "learn-react",
-        upvotes: 0,
-        comments: [],
-    },
-    {
-        name: "learn-node",
-        upvotes: 0,
-        comments: [],
-    },
-    {
-        name: "learn-mongodb",
-        upvotes: 0,
-        comments: [],
+// fetching data from local database
+app.get('/api/articles/:name', async (req, res) => {
+    const { name } = req.params
+
+    const client = new MongoClient('http://127.0.0.1');
+    await client.connect();
+
+    const db = client.db('react-blog-db');
+
+    const article = db.collection.find('articles').findOne({ name })
+
+    if (article) {
+        res.json(article)
+    } else {
+        res.status(404).send({ message: "not found" })
     }
-];
+})
 
-
+// adding upvotes
 app.put('/api/articles/:name/upvotes', (req, res) => {
     const { name } = req.params;
     const article = articlesInfo.find(a => a.name === name);
@@ -34,6 +36,7 @@ app.put('/api/articles/:name/upvotes', (req, res) => {
     }
 })
 
+// adding comments
 app.post('/api/articles/:name/comments', (req, res) => {
     const { name } = req.params;
     const { postedBy, text } = req.body;
