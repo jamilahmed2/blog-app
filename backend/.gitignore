@@ -1,3 +1,7 @@
 node_modules
 .node_modules
 ./node_modules
+credentials.json
+credentials
+privatekey.json
+privatekey

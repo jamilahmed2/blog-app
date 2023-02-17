@@ -5,8 +5,10 @@ import NotFound from './NotFound';
 import axios from 'axios'
 import CommentsList from '../components/CommentsList/CommentLists';
 import AddCommentForm from '../components/CommentFrom/AddCommentForm';
+import useUser from '../Hooks/useUser';
 
 const Article = () => {
+  const { user, isLoading } = useUser();
   const [articleInfo, setArticleInfo] = useState({ upvotes: 0, comments: [] });
   const { articleId } = useParams();
   const article = articles.find((article) => article.name === articleId)
@@ -35,7 +37,9 @@ const Article = () => {
     <>
       <h1>{article.title}</h1>
       <div className="upvotes-section">
-        <button onClick={addUpvote}>Upvote</button>
+        {user
+          ? <button onClick={addUpvote}>Upvote</button>
+          : <button>Log in to upvote</button>}
         <p>This article has {articleInfo.upvotes} upvote(s)</p>
       </div>
       {article.content.map(paragraph => (
@@ -43,7 +47,9 @@ const Article = () => {
           <p key={paragraph}>{paragraph}</p>
         </div>
       ))}
-      <AddCommentForm articleName={articleId} onArticleUpdated={updateArticle => setArticleInfo(updateArticle)} />
+      {user
+        ? <AddCommentForm articleName={articleId} onArticleUpdated={updateArticle => setArticleInfo(updateArticle)} />
+        : <button>Log in to add a comment</button>}
       <CommentsList comments={articleInfo.comments} />
     </>
   )
