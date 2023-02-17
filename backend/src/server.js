@@ -2,31 +2,32 @@ import express from 'express'
 import { db, connectToDb } from './db.js';
 import fs from 'fs';
 import admin from 'firebase-admin'
+const port = 8000
 
 const credentials = JSON.parse(
-    fs.readFileSync('../credentials.json')
+    fs.readFileSync('./credentials.json')
 );
-
 admin.initializeApp({
-    credential: admin.cert(credentials),
-})
+    credential: admin.credential.cert(credentials),
+});
 
 const app = express();
-const port = 8000
 app.use(express.json());
 
 // middleware
 app.use(async (req, res, next) => {
     const { authtoken } = req.headers;
+
     if (authtoken) {
         try {
             req.user = await admin.auth().verifyIdToken(authtoken);
-            // const user = await admin.auth().verifyIdToken(authtoken);
-            // req.user = user;
         } catch (e) {
-            res.sendStatus(400);
+            return res.sendStatus(400);
         }
     }
+
+    req.user = req.user || {};
+
     next();
 });
 
@@ -39,16 +40,17 @@ app.get('/api/articles/:name', async (req, res) => {
 
     if (article) {
         const upvotesIds = article.upvotesIds || [];
-        article.canUpvote = uid && !upvotesIds.include(uid);
-        res.json(article)
+        article.canUpvote = uid && !upvotesIds.includes(uid);
+        
+        res.json(article);
     } else {
-        res.status(404).send({ message: "not found" })
+        res.sendStatus(404);
     }
 })
 
 
 // middleware
-app.use(async (req, res, next) => {
+app.use((req, res, next) => {
     if (req.user) {
         next();
     } else {
@@ -59,16 +61,19 @@ app.use(async (req, res, next) => {
 // adding upvotes
 app.put('/api/articles/:name/upvotes', async (req, res) => {
     const { name } = req.params;
-    const { uid } = req.user
+    const { uid } = req.user;
+
+    const article = await db.collection('articles').findOne({ name });
 
     if (article) {
         const upvotesIds = article.upvotesIds || [];
-        const canUpvote = uid && !upvotesIds.include(uid);
+        const canUpvote = uid && !upvotesIds.includes(uid);
+
         if (canUpvote) {
             await db.collection('articles').updateOne({ name }, {
                 $inc: { upvotes: 1 },
-                $push: { upvotesIds: uid }
-            })
+                $push: { upvotesIds: uid },
+            });
         }
 
         const updatedArticle = await db.collection('articles').findOne({ name });
@@ -86,19 +91,19 @@ app.post('/api/articles/:name/comments', async (req, res) => {
 
     await db.collection('articles').updateOne({ name }, {
         $push: { comments: { postedBy: email, text } },
-    })
-    const article = await db.collection('articles').findOne({ name })
+    });
+    const article = await db.collection('articles').findOne({ name });
 
     if (article) {
-        res.send(article)
+        res.json(article);
     } else {
-        res.send('The article doen\'t exists');
+        res.send('That article doesn\'t exist!');
     }
 })
 
 connectToDb(() => {
     console.log("Connected to database");
     app.listen(port, () => {
-        console.log(`Server is running on ${port}`)
+        console.log(`Server is running on ${port}`);
     })
-})
+});
