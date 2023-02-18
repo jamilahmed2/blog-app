@@ -6,9 +6,7 @@ import admin from 'firebase-admin'
 import 'dotenv/config';
 
 const port = process.env.PORT || 8000
-app.get('/', (req, res) => {
-    res.send("Hello!  server deployed")
-})
+
 
 // import { fileURLToPath } from 'url';
 // const __filename = fileURLToPath(import.meta.url);
@@ -24,6 +22,9 @@ admin.initializeApp({
 const app = express();
 app.use(express.json());
 
+app.get('/',(req,res)=>{
+    res.send("Hello! Deployed");
+  });
 // serving statically
 // app.use(express.static(path.join(__dirname, '../build')));
 // app.get(/^(?!\/api).+/, (req, res) => {
@@ -116,6 +117,8 @@ app.post('/api/articles/:name/comments', async (req, res) => {
         res.send('That article doesn\'t exist!');
     }
 })
+
+
 
 connectToDb(() => {
     console.log("Connected to database");
