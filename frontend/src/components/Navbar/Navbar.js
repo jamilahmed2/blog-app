@@ -8,12 +8,12 @@ const Navbar = () => {
   const navigate = useNavigate();
   return (
     <>
-      <nav>
-        <ul>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/about">About</Link></li>
-          <li><Link to="/articles">Articles</Link></li>
-        </ul>
+      <nav >
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/articles">Articles</Link></li>
+            <li><Link to="/about">About</Link></li>
+          </ul>
         <div className="nav-right">
           {
             user
@@ -22,14 +22,16 @@ const Navbar = () => {
                 signOut(getAuth())
               }>Log Out</button>
 
-              : <form style={{ display: 'flex',flexWrap:'wrap',alignContent:'center' }}>
-                <button style={{ marginRight: '5px' }} onClick={(e) =>{
-                e.preventDefault();
-                  navigate('/login')}
+              : <form style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'center' }}>
+                <button style={{ marginRight: '5px' }} onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/login')
+                }
                 }>Log In</button>
-                <button onClick={(e) =>{
-                e.preventDefault();
-                  navigate('/signup')}
+                <button onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/signup')
+                }
                 }>Sign Up</button>
 
               </form>

@@ -2,7 +2,17 @@ import express from 'express'
 import { db, connectToDb } from './db.js';
 import fs from 'fs';
 import admin from 'firebase-admin'
-const port = 8000
+// import path from 'path';
+import 'dotenv/config';
+
+const port = process.env.PORT || 8000
+app.get('/', (req, res) => {
+    res.send("Hello!  server deployed")
+})
+
+// import { fileURLToPath } from 'url';
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 const credentials = JSON.parse(
     fs.readFileSync('./credentials.json')
@@ -13,6 +23,12 @@ admin.initializeApp({
 
 const app = express();
 app.use(express.json());
+
+// serving statically
+// app.use(express.static(path.join(__dirname, '../build')));
+// app.get(/^(?!\/api).+/, (req, res) => {
+//     res.sendFile(path.join(__dirname, '../build/index.html'));
+// })
 
 // middleware
 app.use(async (req, res, next) => {
@@ -41,7 +57,7 @@ app.get('/api/articles/:name', async (req, res) => {
     if (article) {
         const upvotesIds = article.upvotesIds || [];
         article.canUpvote = uid && !upvotesIds.includes(uid);
-        
+
         res.json(article);
     } else {
         res.sendStatus(404);
